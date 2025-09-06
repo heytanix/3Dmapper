@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSM 3D Map Exporter</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+        
+        .sidebar {
+            width: 320px;
+            background-color: white;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .selection-tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            background-color: white;
+            color: #495057;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .control-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .control-section h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9em;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        }
+        
+        .map-instructions {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .map-instructions h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+            font-size: 1em;
+        }
+        
+        .map-instructions ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #495057;
+        }
+        
+        .map-instructions li {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .coordinates-display {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+        
+        .status {
+            margin: 15px 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background-color: #cce7ff;
+            color: #004085;
+            border: 1px solid #99d6ff;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .area-info {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ffc107;
+            font-size: 0.9em;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ OSM 3D Map Exporter</h1>
+        <p>Generate 3D building models from OpenStreetMap data for simulation projects</p>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="selection-tabs">
+                <button class="tab-button active" onclick="switchTab('draw')">🖱️ Draw Selection</button>
+                <button class="tab-button" onclick="switchTab('coords')">📍 Enter Coordinates</button>
+            </div>
+            
+            <!-- Draw Selection Tab -->
+            <div class="tab-content active" id="draw-tab">
+                <div class="map-instructions">
+                    <h4>How to Select Area:</h4>
+                    <ul>
+                        <li>Click the <strong>rectangle tool</strong> in the top-right of the map</li>
+                        <li>Draw a rectangle around your desired area</li>
+                        <li>The selection will appear in the coordinates below</li>
+                        <li>Use the edit tools to modify or delete your selection</li>
+                    </ul>
+                </div>
+                
+                <div class="area-info">
+                    ⚠️ <strong>Area Limit:</strong> Please select areas smaller than 1km² for optimal performance.
+                </div>
+            </div>
+            
+            <!-- Coordinate Input Tab -->
+            <div class="tab-content" id="coords-tab">
+                <div class="control-section">
+                    <h3>Manual Coordinate Entry</h3>
+                    <p style="margin-bottom: 15px; color: #6c757d; font-size: 0.9em;">
+                        Enter the bounding box coordinates directly:
+                    </p>
+                    
+                    <div class="input-group">
+                        <label>North (Max Latitude):</label>
+                        <input type="number" id="north" step="0.000001" placeholder="e.g. 12.9716">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>South (Min Latitude):</label>
+                        <input type="number" id="south" step="0.000001" placeholder="e.g. 12.9000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>East (Max Longitude):</label>
+                        <input type="number" id="east" step="0.000001" placeholder="e.g. 77.6500">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>West (Min Longitude):</label>
+                        <input type="number" id="west" step="0.000001" placeholder="e.g. 77.5900">
+                    </div>
+                    
+                    <button class="btn" onclick="updateSelection()">📍 Apply Coordinates</button>
+                </div>
+            </div>
+            
+            <!-- Common sections for both tabs -->
+            <div class="control-section">
+                <h3>🏗️ Building Settings</h3>
+                
+                <div class="input-group">
+                    <label>Default Building Height (meters):</label>
+                    <input type="number" id="building-height" value="10" min="1" max="200">
+                </div>
+                
+                <div class="input-group">
+                    <label>Export Quality:</label>
+                    <select id="export-quality">
+                        <option value="low">Low Quality (Fast)</option>
+                        <option value="medium" selected>Medium Quality</option>
+                        <option value="high">High Quality (Detailed)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>📋 Selected Area</h3>
+                <div id="coordinates-display" class="coordinates-display">
+                    No area selected yet
+                </div>
+                
+                <button class="btn btn-export" id="export-btn" onclick="exportOBJ()" disabled>
+                    📦 Export 3D OBJ File
+                </button>
+                
+                <button class="btn btn-clear" onclick="clearSelection()">
+                    🗑️ Clear Selection
+                </button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generating 3D model...</p>
+            </div>
+            
+            <div class="status" id="status"></div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    
+    <script>
+        // Initialize map centered on Bangalore
+        const map = L.map('map').setView([12.9716, 77.5946], 12);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Initialize drawing controls
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        
+        const drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polygon: false,
+                polyline: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                    shapeOptions: {
+                        color: '#667eea',
+                        weight: 3,
+                        fillOpacity: 0.2
+                    }
+                }
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            }
+        });
+        map.addControl(drawControl);
+        
+        let currentBounds = null;
+        
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        // Handle drawing events
+        map.on(L.Draw.Event.CREATED, function(event) {
+            drawnItems.clearLayers();
+            const layer = event.layer;
+            drawnItems.addLayer(layer);
+            
+            if (layer instanceof L.Rectangle) {
+                currentBounds = layer.getBounds();
+                updateCoordinateDisplay();
+                enableExportButton();
+                showStatus('Area selected using rectangle tool', 'success');
+            }
+        });
+        
+        map.on(L.Draw.Event.DELETED, function(event) {
+            currentBounds = null;
+            updateCoordinateDisplay();
+            disableExportButton();
+            showStatus('Selection deleted', 'info');
+        });
+        
+        map.on(L.Draw.Event.EDITED, function(event) {
+            const layers = event.layers;
+            layers.eachLayer(function(layer) {
+                if (layer instanceof L.Rectangle) {
+                    currentBounds = layer.getBounds();
+                    updateCoordinateDisplay();
+                    showStatus('Selection updated', 'success');
+                }
+            });
+        });
+        
+        function updateCoordinateDisplay() {
+            const display = document.getElementById('coordinates-display');
+            
+            if (currentBounds) {
+                const north = currentBounds.getNorth().toFixed(6);
+                const south = currentBounds.getSouth().toFixed(6);
+                const east = currentBounds.getEast().toFixed(6);
+                const west = currentBounds.getWest().toFixed(6);
+                
+                display.innerHTML = `
+                    <strong>📍 Selected Area:</strong><br>
+                    North: ${north}°<br>
+                    South: ${south}°<br>
+                    East: ${east}°<br>
+                    West: ${west}°<br>
+                    <br>
+                    <strong>📏 Area Info:</strong><br>
+                    Size: ~${calculateArea()} km²<br>
+                    Center: ${currentBounds.getCenter().lat.toFixed(4)}°, ${currentBounds.getCenter().lng.toFixed(4)}°
+                `;
+                
+                // Update input fields
+                document.getElementById('north').value = north;
+                document.getElementById('south').value = south;
+                document.getElementById('east').value = east;
+                document.getElementById('west').value = west;
+            } else {
+                display.innerHTML = 'No area selected yet<br><br>Use the rectangle tool on the map or enter coordinates manually.';
+                
+                // Clear input fields
+                document.getElementById('north').value = '';
+                document.getElementById('south').value = '';
+                document.getElementById('east').value = '';
+                document.getElementById('west').value = '';
+            }
+        }
+        
+        function calculateArea() {
+            if (!currentBounds) return 0;
+            
+            const latDiff = currentBounds.getNorth() - currentBounds.getSouth();
+            const lonDiff = currentBounds.getEast() - currentBounds.getWest();
+            
+            // Rough approximation (not accurate for large areas)
+            const kmPerDegreeLat = 111;
+            const kmPerDegreeLon = 111 * Math.cos(currentBounds.getCenter().lat * Math.PI / 180);
+            
+            return (latDiff * kmPerDegreeLat * lonDiff * kmPerDegreeLon).toFixed(3);
+        }
+        
+        function updateSelection() {
+            const north = parseFloat(document.getElementById('north').value);
+            const south = parseFloat(document.getElementById('south').value);
+            const east = parseFloat(document.getElementById('east').value);
+            const west = parseFloat(document.getElementById('west').value);
+            
+            if (isNaN(north) || isNaN(south) || isNaN(east) || isNaN(west)) {
+                showStatus('Please enter valid coordinates for all fields', 'error');
+                return;
+            }
+            
+            if (north <= south || east <= west) {
+                showStatus('Invalid coordinates: North must be > South, East must be > West', 'error');
+                return;
+            }
+            
+            // Check area size
+            const areaDeg = (east - west) * (north - south);
+            if (areaDeg > 0.01) {
+                showStatus('Selected area too large. Please select a smaller area (< 1km²)', 'error');
+                return;
+            }
+            
+            // Clear existing selection
+            drawnItems.clearLayers();
+            
+            // Create new rectangle
+            const bounds = L.latLngBounds([south, west], [north, east]);
+            const rectangle = L.rectangle(bounds, {
+                color: '#667eea',
+                weight: 3,
+                fillOpacity: 0.2
+            });
+            
+            drawnItems.addLayer(rectangle);
+            currentBounds = bounds;
+            
+            // Fit map to selection
+            map.fitBounds(bounds);
+            
+            updateCoordinateDisplay();
+            enableExportButton();
+            showStatus('Area selection applied from coordinates', 'success');
+        }
+        
+        function clearSelection() {
+            drawnItems.clearLayers();
+            currentBounds = null;
+            updateCoordinateDisplay();
+            disableExportButton();
+            showStatus('Selection cleared', 'info');
+        }
+        
+        function enableExportButton() {
+            document.getElementById('export-btn').disabled = false;
+        }
+        
+        function disableExportButton() {
+            document.getElementById('export-btn').disabled = true;
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('export-btn').disabled = show;
+        }
+        
+        async function exportOBJ() {
+            if (!currentBounds) {
+                showStatus('Please select an area first', 'error');
+                return;
+            }
+            
+            const bbox = [
+                currentBounds.getWest(),   // min lon
+                currentBounds.getSouth(),  // min lat
+                currentBounds.getEast(),   // max lon
+                currentBounds.getNorth()   // max lat
+            ];
+            
+            const buildingHeight = parseFloat(document.getElementById('building-height').value) || 10;
+            const quality = document.getElementById('export-quality').value;
+            
+            showLoading(true);
+            showStatus('Fetching building data from OpenStreetMap...', 'info');
+            
+            try {
+                const response = await fetch('/export_obj', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bbox: bbox,
+                        building_height: buildingHeight,
+                        quality: quality
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `osm_3d_buildings_${Date.now()}.obj`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showStatus('🎉 3D OBJ file exported successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Export failed: ${errorData.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Network error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Add helpful landmarks for Bangalore
+        const bangaloreMarkers = [
+            { name: "Bangalore Palace", lat: 12.9984, lon: 77.5916, icon: "🏰" },
+            { name: "Cubbon Park", lat: 12.9763, lon: 77.5929, icon: "🌳" },
+            { name: "MG Road", lat: 12.9755, lon: 77.6098, icon: "🛣️" },
+            { name: "Electronic City", lat: 12.8456, lon: 77.6603, icon: "💻" }
+        ];
+        
+        bangaloreMarkers.forEach(marker => {
+            L.marker([marker.lat, marker.lon])
+                .bindPopup(`
+                    <div style="text-align: center;">
+                        <h3>${marker.icon} ${marker.name}</h3>
+                        <button onclick="map.setView([${marker.lat}, ${marker.lon}], 15); this.parentElement.parentElement.parentElement.remove();" 
+                                style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                            🎯 Center Here
+                        </button>
+                    </div>
+                `)
+                .addTo(map);
+        });
+        
+        // Initialize display
+        updateCoordinateDisplay();
+    </script>
+</body>
+</html>
