@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSM 3D Map Exporter</title>
+    <title>OSM 3D Textured Map Exporter</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -45,7 +45,7 @@
         .sidebar {
             width: 320px;
             background-color: white;
-            padding: 0;
+            padding: 20px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             overflow-y: auto;
         }
@@ -60,99 +60,67 @@
             width: 100%;
         }
         
-        .selection-tabs {
-            display: flex;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #6c757d;
-            transition: all 0.3s;
-        }
-        
-        .tab-button.active {
-            background-color: white;
-            color: #495057;
-            border-bottom: 3px solid #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 20px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
         .control-section {
             background-color: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
             border-left: 4px solid #667eea;
         }
         
         .control-section h3 {
             margin: 0 0 15px 0;
             color: #495057;
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: 600;
         }
         
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .input-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
             color: #495057;
-            font-size: 0.9em;
+            font-size: 1em;
         }
         
         .input-group input, .input-group select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid #e9ecef;
-            border-radius: 6px;
+            border-radius: 8px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 16px;
             transition: border-color 0.3s;
         }
         
         .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
+            padding: 15px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
         .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         
         .btn:disabled {
@@ -164,6 +132,9 @@
         
         .btn-export {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            font-size: 18px;
+            padding: 18px 20px;
+            font-weight: 600;
         }
         
         .btn-clear {
@@ -171,80 +142,121 @@
         }
         
         .map-instructions {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border-left: 4px solid #0066cc;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
         }
         
         .map-instructions h4 {
-            margin: 0 0 10px 0;
-            color: #0066cc;
-            font-size: 1em;
+            margin: 0 0 15px 0;
+            color: #1976d2;
+            font-size: 1.1em;
+            font-weight: 600;
         }
         
         .map-instructions ul {
             margin: 0;
             padding-left: 20px;
-            color: #495057;
+            color: #424242;
         }
         
         .map-instructions li {
-            margin-bottom: 5px;
-            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        
+        .feature-highlight {
+            background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .feature-highlight h4 {
+            margin: 0 0 10px 0;
+            color: #f57c00;
+            font-size: 1.1em;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            width: 25px;
         }
         
         .coordinates-display {
             background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
+            padding: 20px;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 13px;
             color: #495057;
             border: 2px solid #e9ecef;
+            line-height: 1.6;
         }
         
         .status {
-            margin: 15px 20px;
-            padding: 12px;
-            border-radius: 6px;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
             display: none;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 500;
         }
         
         .status.success {
             background-color: #d1ecf1;
             color: #0c5460;
-            border: 1px solid #bee5eb;
+            border: 2px solid #bee5eb;
         }
         
         .status.error {
             background-color: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border: 2px solid #f5c6cb;
         }
         
         .status.info {
             background-color: #cce7ff;
             color: #004085;
-            border: 1px solid #99d6ff;
+            border: 2px solid #99d6ff;
         }
         
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
         }
         
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
         }
         
         @keyframes spin {
@@ -254,88 +266,57 @@
         
         .area-info {
             background-color: #fff3cd;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             border-left: 4px solid #ffc107;
-            font-size: 0.9em;
+            font-size: 0.95em;
             color: #856404;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🗺️ OSM 3D Map Exporter</h1>
-        <p>Generate 3D building models from OpenStreetMap data for simulation projects</p>
+        <h1>🗺️ OSM 3D Textured Map Exporter</h1>
+        <p>Generate 3D buildings on realistic textured ground from OpenStreetMap</p>
     </div>
     
     <div class="container">
         <div class="sidebar">
-            <div class="selection-tabs">
-                <button class="tab-button active" onclick="switchTab('draw')">🖱️ Draw Selection</button>
-                <button class="tab-button" onclick="switchTab('coords')">📍 Enter Coordinates</button>
+            <div class="map-instructions">
+                <h4>🎯 How to Create Your 3D Map:</h4>
+                <ul>
+                    <li><strong>Draw Selection:</strong> Use the rectangle tool on the map</li>
+                    <li><strong>Adjust Settings:</strong> Set building height and quality</li>
+                    <li><strong>Export:</strong> Get a ZIP file with textured 3D model</li>
+                    <li><strong>Import:</strong> Load the OBJ file into Blender/Unity/etc.</li>
+                </ul>
             </div>
             
-            <!-- Draw Selection Tab -->
-            <div class="tab-content active" id="draw-tab">
-                <div class="map-instructions">
-                    <h4>How to Select Area:</h4>
-                    <ul>
-                        <li>Click the <strong>rectangle tool</strong> in the top-right of the map</li>
-                        <li>Draw a rectangle around your desired area</li>
-                        <li>The selection will appear in the coordinates below</li>
-                        <li>Use the edit tools to modify or delete your selection</li>
-                    </ul>
-                </div>
-                
-                <div class="area-info">
-                    ⚠️ <strong>Area Limit:</strong> Please select areas smaller than 1km² for optimal performance.
-                </div>
+            <div class="feature-highlight">
+                <h4>✨ What You'll Get:</h4>
+                <ul class="feature-list">
+                    <li><span class="feature-icon">🏢</span> 3D extruded buildings</li>
+                    <li><span class="feature-icon">🗺️</span> Realistic map texture ground</li>
+                    <li><span class="feature-icon">📦</span> Complete package (OBJ + MTL + PNG)</li>
+                    <li><span class="feature-icon">🎮</span> Ready for simulation projects</li>
+                </ul>
             </div>
             
-            <!-- Coordinate Input Tab -->
-            <div class="tab-content" id="coords-tab">
-                <div class="control-section">
-                    <h3>Manual Coordinate Entry</h3>
-                    <p style="margin-bottom: 15px; color: #6c757d; font-size: 0.9em;">
-                        Enter the bounding box coordinates directly:
-                    </p>
-                    
-                    <div class="input-group">
-                        <label>North (Max Latitude):</label>
-                        <input type="number" id="north" step="0.000001" placeholder="e.g. 12.9716">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>South (Min Latitude):</label>
-                        <input type="number" id="south" step="0.000001" placeholder="e.g. 12.9000">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>East (Max Longitude):</label>
-                        <input type="number" id="east" step="0.000001" placeholder="e.g. 77.6500">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>West (Min Longitude):</label>
-                        <input type="number" id="west" step="0.000001" placeholder="e.g. 77.5900">
-                    </div>
-                    
-                    <button class="btn" onclick="updateSelection()">📍 Apply Coordinates</button>
-                </div>
+            <div class="area-info">
+                ⚠️ <strong>Area Limit:</strong> Maximum 1km² for optimal performance and quick processing.
             </div>
             
-            <!-- Common sections for both tabs -->
             <div class="control-section">
-                <h3>🏗️ Building Settings</h3>
+                <h3>⚙️ Export Settings</h3>
                 
                 <div class="input-group">
                     <label>Default Building Height (meters):</label>
-                    <input type="number" id="building-height" value="10" min="1" max="200">
+                    <input type="number" id="building-height" value="12" min="2" max="200">
                 </div>
                 
                 <div class="input-group">
-                    <label>Export Quality:</label>
+                    <label>Model Quality:</label>
                     <select id="export-quality">
                         <option value="low">Low Quality (Fast)</option>
                         <option value="medium" selected>Medium Quality</option>
@@ -345,13 +326,40 @@
             </div>
             
             <div class="control-section">
+                <h3>📍 Manual Coordinates (Optional)</h3>
+                
+                <div class="input-group">
+                    <label>North (Max Latitude):</label>
+                    <input type="number" id="north" step="0.000001" placeholder="e.g. 12.9716">
+                </div>
+                
+                <div class="input-group">
+                    <label>South (Min Latitude):</label>
+                    <input type="number" id="south" step="0.000001" placeholder="e.g. 12.9650">
+                </div>
+                
+                <div class="input-group">
+                    <label>East (Max Longitude):</label>
+                    <input type="number" id="east" step="0.000001" placeholder="e.g. 77.6000">
+                </div>
+                
+                <div class="input-group">
+                    <label>West (Min Longitude):</label>
+                    <input type="number" id="west" step="0.000001" placeholder="e.g. 77.5900">
+                </div>
+                
+                <button class="btn" onclick="updateSelection()">📍 Apply Coordinates</button>
+            </div>
+            
+            <div class="control-section">
                 <h3>📋 Selected Area</h3>
                 <div id="coordinates-display" class="coordinates-display">
-                    No area selected yet
+                    No area selected yet.<br><br>
+                    Use the rectangle tool on the map to select an area.
                 </div>
                 
                 <button class="btn btn-export" id="export-btn" onclick="exportOBJ()" disabled>
-                    📦 Export 3D OBJ File
+                    🚀 Export 3D Textured Map
                 </button>
                 
                 <button class="btn btn-clear" onclick="clearSelection()">
@@ -361,7 +369,8 @@
             
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Generating 3D model...</p>
+                <p><strong>Creating your 3D textured map...</strong></p>
+                <p>Fetching buildings and map texture...</p>
             </div>
             
             <div class="status" id="status"></div>
@@ -378,12 +387,12 @@
     
     <script>
         // Initialize map centered on Bangalore
-        const map = L.map('map').setView([12.9716, 77.5946], 12);
+        const map = L.map('map').setView([12.9716, 77.5946], 13);
         
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
+            maxZoom: 18
         }).addTo(map);
         
         // Initialize drawing controls
@@ -402,7 +411,7 @@
                     shapeOptions: {
                         color: '#667eea',
                         weight: 3,
-                        fillOpacity: 0.2
+                        fillOpacity: 0.3
                     }
                 }
             },
@@ -415,17 +424,6 @@
         
         let currentBounds = null;
         
-        // Tab switching functionality
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-        }
-        
         // Handle drawing events
         map.on(L.Draw.Event.CREATED, function(event) {
             drawnItems.clearLayers();
@@ -436,7 +434,7 @@
                 currentBounds = layer.getBounds();
                 updateCoordinateDisplay();
                 enableExportButton();
-                showStatus('Area selected using rectangle tool', 'success');
+                showStatus('Area selected! Ready to export 3D textured map.', 'success');
             }
         });
         
@@ -476,7 +474,12 @@
                     <br>
                     <strong>📏 Area Info:</strong><br>
                     Size: ~${calculateArea()} km²<br>
-                    Center: ${currentBounds.getCenter().lat.toFixed(4)}°, ${currentBounds.getCenter().lng.toFixed(4)}°
+                    Center: ${currentBounds.getCenter().lat.toFixed(4)}°, ${currentBounds.getCenter().lng.toFixed(4)}°<br>
+                    <br>
+                    <strong>🎯 Export includes:</strong><br>
+                    • 3D Buildings (.obj)<br>
+                    • Materials (.mtl)<br>
+                    • Map Texture (.png)
                 `;
                 
                 // Update input fields
@@ -485,7 +488,10 @@
                 document.getElementById('east').value = east;
                 document.getElementById('west').value = west;
             } else {
-                display.innerHTML = 'No area selected yet<br><br>Use the rectangle tool on the map or enter coordinates manually.';
+                display.innerHTML = `
+                    No area selected yet.<br><br>
+                    Use the rectangle tool on the map to select an area.
+                `;
                 
                 // Clear input fields
                 document.getElementById('north').value = '';
@@ -501,7 +507,6 @@
             const latDiff = currentBounds.getNorth() - currentBounds.getSouth();
             const lonDiff = currentBounds.getEast() - currentBounds.getWest();
             
-            // Rough approximation (not accurate for large areas)
             const kmPerDegreeLat = 111;
             const kmPerDegreeLon = 111 * Math.cos(currentBounds.getCenter().lat * Math.PI / 180);
             
@@ -520,7 +525,7 @@
             }
             
             if (north <= south || east <= west) {
-                showStatus('Invalid coordinates: North must be > South, East must be > West', 'error');
+                showStatus('Invalid coordinates: North > South, East > West', 'error');
                 return;
             }
             
@@ -539,7 +544,7 @@
             const rectangle = L.rectangle(bounds, {
                 color: '#667eea',
                 weight: 3,
-                fillOpacity: 0.2
+                fillOpacity: 0.3
             });
             
             drawnItems.addLayer(rectangle);
@@ -575,10 +580,9 @@
             statusDiv.textContent = message;
             statusDiv.style.display = 'block';
             
-            // Hide after 5 seconds
             setTimeout(() => {
                 statusDiv.style.display = 'none';
-            }, 5000);
+            }, 6000);
         }
         
         function showLoading(show) {
@@ -593,17 +597,17 @@
             }
             
             const bbox = [
-                currentBounds.getWest(),   // min lon
-                currentBounds.getSouth(),  // min lat
-                currentBounds.getEast(),   // max lon
-                currentBounds.getNorth()   // max lat
+                currentBounds.getWest(),
+                currentBounds.getSouth(),
+                currentBounds.getEast(),
+                currentBounds.getNorth()
             ];
             
-            const buildingHeight = parseFloat(document.getElementById('building-height').value) || 10;
+            const buildingHeight = parseFloat(document.getElementById('building-height').value) || 12;
             const quality = document.getElementById('export-quality').value;
             
             showLoading(true);
-            showStatus('Fetching building data from OpenStreetMap...', 'info');
+            showStatus('Creating your 3D textured map...', 'info');
             
             try {
                 const response = await fetch('/export_obj', {
@@ -624,13 +628,13 @@
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    a.download = `osm_3d_buildings_${Date.now()}.obj`;
+                    a.download = `osm_3d_textured_map_${Date.now()}.zip`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
                     
-                    showStatus('🎉 3D OBJ file exported successfully!', 'success');
+                    showStatus('🎉 3D textured map exported successfully! Extract the ZIP to get OBJ + texture files.', 'success');
                 } else {
                     const errorData = await response.json();
                     showStatus(`Export failed: ${errorData.error}`, 'error');
@@ -642,22 +646,24 @@
             }
         }
         
-        // Add helpful landmarks for Bangalore
+        // Add landmark markers for Bangalore
         const bangaloreMarkers = [
             { name: "Bangalore Palace", lat: 12.9984, lon: 77.5916, icon: "🏰" },
             { name: "Cubbon Park", lat: 12.9763, lon: 77.5929, icon: "🌳" },
             { name: "MG Road", lat: 12.9755, lon: 77.6098, icon: "🛣️" },
-            { name: "Electronic City", lat: 12.8456, lon: 77.6603, icon: "💻" }
+            { name: "Electronic City", lat: 12.8456, lon: 77.6603, icon: "💻" },
+            { name: "Koramangala", lat: 12.9352, lon: 77.6245, icon: "🏙️" }
         ];
         
         bangaloreMarkers.forEach(marker => {
             L.marker([marker.lat, marker.lon])
                 .bindPopup(`
-                    <div style="text-align: center;">
+                    <div style="text-align: center; padding: 10px;">
                         <h3>${marker.icon} ${marker.name}</h3>
-                        <button onclick="map.setView([${marker.lat}, ${marker.lon}], 15); this.parentElement.parentElement.parentElement.remove();" 
-                                style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
-                            🎯 Center Here
+                        <p>Popular area for 3D mapping</p>
+                        <button onclick="map.setView([${marker.lat}, ${marker.lon}], 16); this.parentElement.parentElement.parentElement.remove();" 
+                                style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                            🎯 Center & Zoom Here
                         </button>
                     </div>
                 `)
